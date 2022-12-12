@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import mixins, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -42,3 +43,7 @@ class RegisterUser(mixins.CreateModelMixin,
 class ClientCRUD(ModelViewSet):
     serializer_class = ClientSerializer
     queryset = Client.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        return super(ClientCRUD, self).update(request, *args, **kwargs)
+

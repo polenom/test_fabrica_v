@@ -7,16 +7,9 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
 
 
-class Tag(models.Model):
-    name = models.CharField(max_length=30)
-
-    def __str__(self):
-        return self.name
-
-
 class OperatorCode(models.Model):
     name = models.CharField(max_length=20, help_text='operator name')
-    code = models.IntegerField()
+    code = models.IntegerField(unique=True)
 
     def __str__(self):
         return self.name
@@ -29,21 +22,37 @@ class Distribution(models.Model):
     start = models.DateTimeField(help_text='Time is starting')
     finish = models.DateTimeField(help_text='Time is finishing')
     text = models.TextField(max_length=300)
-    filter_tag = models.ManyToManyField(Tag)
-    filter_code = models.ManyToManyField(OperatorCode)
 
 
 class Client(models.Model):
     TIMEZONE_CHOICES = zip(pytz.all_timezones, pytz.all_timezones)
 
-    phone_number = models.CharField(max_length=12)
+    phone_number = models.CharField(max_length=12, unique=True)
     code = models.ForeignKey(OperatorCode,
                              on_delete=models.SET_NULL,
                              null=True,
                              related_name='clients')
-    tag = models.ManyToManyField(Tag)
-    timezone = models.CharField(max_length=32,
-                                choices=TIMEZONE_CHOICES)
+    timezone = models.CharField(max_length=32,)
+
+
+class TagForClient(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='tags')
+    name = models.CharField(max_length=30)
+
+    class Meta:
+        unique_together = ('client', 'name',)
+    def __str__(self):
+        return self.name
+
+
+class FilterTag(models.Model):
+    task = models.ForeignKey(Distribution, on_delete=models.CASCADE, related_name='filter_tag')
+    name = models.CharField(max_length=100)
+
+
+class FilterCode(models.Model):
+    task = models.ForeignKey(Distribution, on_delete=models.CASCADE, related_name='filter_code')
+    code = models.IntegerField()
 
 
 class Message(models.Model):
